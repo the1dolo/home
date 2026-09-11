@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>idolo — BAPR 3-1D Brand Refresh '26-'27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Caveat+Brush&family=Inter:ital,wght@0,400;0,600;0,700;1,700;1,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2b0c06;
+    --night:#1c1a19;
+    --cream:#f2efe7;
+    --blue:#38b6ff;
+    --yellow:#f6ef3d;
+    --pink:#ff559d;
+    --green:#75db4a;
+    --red:#ff3131;
+    --orange:#ff914d;
+    --purple:#a424b7;
+    --display: 'Baloo 2', sans-serif;
+    --accent: 'Caveat Brush', cursive;
+    --body: 'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  /* ---------- scrollbar ---------- */
+  html{ scrollbar-color: var(--pink) var(--night); }
+  ::-webkit-scrollbar{ width:12px; height:12px; }
+  ::-webkit-scrollbar-track{ background:var(--night); }
+  ::-webkit-scrollbar-thumb{
+    background:var(--pink);
+    border-radius:999px;
+    border:3px solid var(--night);
+  }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--pink); }
+
+  body{
+    margin:0;
+    font-family:var(--body);
+    background:var(--cream);
+    color:var(--ink);
+    overflow-x:hidden;
+  }
+  h1,h2,h3{
+    font-family:var(--display);
+    font-weight:800;
+    margin:0;
+    line-height:0.92;
+    letter-spacing:-0.01em;
+  }
+  .script{
+    font-family:var(--accent);
+    font-weight:400;
+    letter-spacing:0.01em;
+  }
+  p{ line-height:1.55; font-size:1.05rem; }
+  a{color:inherit;}
+
+  /* ---------- decorative shapes (brand asset motifs) ---------- */
+  .shape{ position:absolute; pointer-events:none; }
+  .shape svg{ display:block; width:100%; height:100%; }
+
+  /* ---------- nav ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:14px 28px 130px;
+    margin-bottom:-188px;
+    color:var(--cream);
+    border-bottom:none;
+  }
+  .topbar-fade{
+    position:absolute; inset:0;
+    z-index:0; pointer-events:none;
+  }
+  .topbar-fade span{
+    position:absolute; inset:0; display:block;
+  }
+  /* colour tint removed — blur only */
+  /* stacked blur bands: base blur amounts are set at runtime via JS (data-blur attrs),
+     ramping from 0 up to full strength as the user scrolls down. The masks below just
+     control where each band tapers out vertically, so the overall strength still fades
+     smoothly from top to bottom of the bar regardless of the current scroll progress. */
+  .topbar-fade span:nth-child(2){
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 8%, transparent 24%);
+    mask-image: linear-gradient(to bottom, black 0%, black 8%, transparent 24%);
+  }
+  .topbar-fade span:nth-child(3){
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 16%, transparent 36%);
+    mask-image: linear-gradient(to bottom, black 0%, black 16%, transparent 36%);
+  }
+  .topbar-fade span:nth-child(4){
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 26%, transparent 48%);
+    mask-image: linear-gradient(to bottom, black 0%, black 26%, transparent 48%);
+  }
+  .topbar-fade span:nth-child(5){
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 36%, transparent 62%);
+    mask-image: linear-gradient(to bottom, black 0%, black 36%, transparent 62%);
+  }
+  .topbar-fade span:nth-child(6){
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 48%, transparent 78%);
+    mask-image: linear-gradient(to bottom, black 0%, black 48%, transparent 78%);
+  }
+  .topbar-fade span:nth-child(7){
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 92%);
+    mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 92%);
+  }
+  .logo-cycle{
+    position:fixed;
+    left:50%;
+    top:0;
+    z-index:52;
+    pointer-events:none;
+    /* width/height/top set dynamically by script; these are just a sane fallback */
+    width:150px; height:44px;
+    transform:translateX(-50%);
+  }
+  .logo-cycle img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:contain;
+    opacity:0;
+  }
+  .logo-cycle img.blend-shadow{
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,.35));
+  }
+  .logo-cycle img.active{ opacity:1; }
+  .topbar-inner{
+    position:relative; z-index:1;
+    width:100%; height:44px;
+  }
+  .hamburger{
+    position:absolute; right:0; top:50%;
+    transform:translateY(-50%);
+    display:flex; align-items:center; justify-content:center;
+    width:50px; height:50px;
+    background:none; border:none; padding:0; cursor:pointer;
+  }
+  .hamburger svg{
+    width:48px; height:48px;
+    fill:var(--cream);
+    transition:transform .25s ease;
+  }
+  .hamburger.open svg{ transform:rotate(45deg); }
+  .mobile-menu{
+    position:fixed; top:0; right:0;
+    height:100%; width:min(260px, 72vw);
+    background:var(--night);
+    color:var(--cream);
+    display:flex; flex-direction:column;
+    gap:6px;
+    padding:90px 32px 32px;
+    transform:translateX(100%);
+    transition:transform .3s ease;
+    z-index:60;
+  }
+  .mobile-menu.open{ transform:translateX(0); }
+  .mobile-menu a{
+    color:var(--cream); text-decoration:none;
+    font-family:var(--display); font-weight:700; font-size:1.2rem;
+    padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.12);
+  }
+  .menu-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,0.4);
+    opacity:0; pointer-events:none;
+    transition:opacity .3s ease;
+    z-index:55;
+  }
+  .menu-backdrop.open{ opacity:1; pointer-events:auto; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    background:var(--night);
+    color:var(--cream);
+    min-height:88vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding:60px 20px 90px;
+    overflow:hidden;
+  }
+  .hero .hero-video{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    z-index:0;
+  }
+  .hero .hero-overlay{
+    position:absolute; inset:0;
+    background:rgba(10,8,6,0.4);
+    z-index:1;
+  }
+  .hero > *{
+    position:relative;
+    z-index:2;
+  }
+  .hero-logo-spacer{
+    width:min(520px, 80vw);
+    aspect-ratio: 150 / 44;
+    margin:18px auto 0;
+  }
+  .hero-star{
+    width:44px; height:44px; fill:var(--cream);
+    margin-bottom:-6px;
+    transform:rotate(-10deg);
+  }
+  .hero-sub{
+    max-width:520px; margin:22px auto 0;
+    font-size:1.15rem; color:#d8d3c9;
+  }
+  .hero-tag{
+    margin-top:34px;
+    font-family:var(--display); font-weight:700;
+    font-size:1.1rem; color:var(--night);
+    background:var(--yellow);
+    padding:8px 18px; border-radius:999px;
+    transform:rotate(-3deg);
+    display:inline-block;
+  }
+  .scroll-cue{
+    position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+    font-size:0.85rem; color:#9a948a; letter-spacing:0.04em;
+  }
+
+  /* ---------- section shell ---------- */
+  section.block{
+    position:relative;
+    padding:100px 24px 110px;
+    overflow:hidden;
+  }
+  .wrap{ max-width:980px; margin:0 auto; position:relative; z-index:2; }
+  .kicker{
+    font-family:var(--body); font-weight:700; font-style:italic;
+    font-size:1rem; margin-bottom:6px; opacity:0.75;
+  }
+  .headline{ font-size:clamp(2.4rem, 6vw, 4rem); margin-bottom:26px; }
+
+  /* ---------- about ---------- */
+  #about{ background:var(--pink); color:var(--ink); }
+  .about-grid{
+    display:grid; grid-template-columns: 1.2fr 1fr; gap:50px; align-items:start;
+  }
+  @media (max-width:760px){ .about-grid{ grid-template-columns:1fr; } }
+  .about-card{
+    background:var(--cream);
+    border:3px solid var(--ink);
+    border-radius:18px;
+    padding:26px 28px;
+    transform:rotate(-1.2deg);
+  }
+  .about-card + .about-card{ margin-top:22px; transform:rotate(1deg); }
+  .about-card h3{ font-size:1.3rem; margin-bottom:8px; }
+  .theme-badge{
+    display:inline-block; background:var(--night); color:var(--yellow);
+    font-family:var(--display); font-weight:700; font-size:0.95rem;
+    padding:6px 14px; border-radius:8px; margin-bottom:18px;
+    transform:rotate(-2deg);
+  }
+
+  /* ---------- events ---------- */
+  #events{ background:var(--blue); color:var(--ink); }
+  .events-list{ display:flex; flex-direction:column; gap:18px; }
+  .event-row{
+    display:grid; grid-template-columns: 110px 1fr auto; gap:20px; align-items:center;
+    background:var(--cream); border:3px solid var(--ink); border-radius:14px;
+    padding:16px 20px;
+  }
+  @media (max-width:600px){ .event-row{ grid-template-columns:1fr; text-align:left; } }
+  .event-date{
+    font-family:var(--display); font-weight:800; font-size:1.05rem;
+    background:var(--night); color:var(--cream); border-radius:10px;
+    padding:10px; text-align:center; line-height:1.1;
+  }
+  .event-name{ font-family:var(--display); font-weight:700; font-size:1.2rem; }
+  .event-note{ font-size:0.9rem; opacity:0.7; margin-top:2px; }
+  .event-tag{
+    font-family:var(--body); font-weight:700; font-style:italic; font-size:0.85rem;
+    padding:6px 12px; border-radius:999px; white-space:nowrap;
+  }
+  .placeholder-note{
+    margin-top:26px; font-size:0.9rem; font-style:italic; opacity:0.75;
+  }
+
+  /* ---------- gallery ---------- */
+  #gallery{ background:var(--yellow); color:var(--ink); }
+  .gallery-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:18px;
+  }
+  @media (max-width:760px){ .gallery-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:480px){ .gallery-grid{ grid-template-columns:1fr; } }
+  .pubmat{
+    aspect-ratio: 3/4;
+    border-radius:14px;
+    border:3px solid var(--ink);
+    position:relative;
+    display:flex; flex-direction:column; justify-content:space-between;
+    padding:12px;
+    overflow:hidden;
+  }
+  .pubmat .pm-logo{ font-family:var(--display); font-weight:800; font-size:0.9rem; }
+  .pubmat .pm-handle{ font-family:var(--body); font-weight:700; font-style:italic; font-size:0.72rem; text-align:right; }
+  .pubmat .pm-caption{ font-family:var(--display); font-weight:700; font-size:1.05rem; }
+
+  /* ---------- credits ---------- */
+  #credits{ background:var(--night); color:var(--cream); }
+  .credits-head{ display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:36px; }
+  .committee-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px 28px;
+  }
+  @media (max-width:640px){ .committee-grid{ grid-template-columns:repeat(2,1fr); } }
+  .committee-grid span{ font-size:0.98rem; opacity:0.9; }
+  .committee-grid span.lead{ color:var(--yellow); font-weight:700; opacity:1; }
+  .heads{
+    display:flex; gap:40px; margin-bottom:30px; flex-wrap:wrap;
+  }
+  .heads .role{ font-size:0.85rem; text-transform:none; opacity:0.65; margin-bottom:2px; }
+  .heads .name{ font-family:var(--display); font-weight:700; font-size:1.15rem; }
+
+  /* ---------- footer ---------- */
+  footer{
+    background:var(--ink); color:var(--cream);
+    text-align:center; padding:36px 20px;
+    font-size:0.85rem;
+  }
+  footer .foot-logo{ font-family:var(--display); font-weight:800; font-size:1.3rem; margin-bottom:8px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-fade" aria-hidden="true">
+    <span></span><span data-blur="24"></span><span data-blur="18"></span><span data-blur="13"></span><span data-blur="9"></span><span data-blur="5"></span><span data-blur="2"></span>
+  </div>
+  <div class="topbar-inner">
+    <button class="hamburger" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5l2.95 6.28 6.93.7-5.19 4.71 1.5 6.81L12 17.27l-6.19 3.73 1.5-6.81-5.19-4.71 6.93-.7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="logo-cycle" id="travelingLogo">
+  <img class="active" src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%205logotype.png" alt="idolo logotype variant 5">
+  <img src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%201logotype.png" alt="idolo logotype variant 1">
+  <img src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%202logotype.png" alt="idolo logotype variant 2">
+  <img src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%203logotype.png" alt="idolo logotype variant 3">
+  <img src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%204logotype.png" alt="idolo logotype variant 4">
+  <img src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%206logotype.png" alt="idolo logotype variant 6">
+</div>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu">
+  <a href="#about">About</a>
+  <a href="#events">Events</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#credits">Credits</a>
+</nav>
+
+<section class="hero" id="top">
+  <video class="hero-video" autoplay muted loop playsinline preload="metadata">
+    <source src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Frame1bwiset%201_1.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="hero-logo-spacer" id="heroLogoSpacer"></div>
+  <p class="hero-sub">Pushing past our perceived potentials, evolving past expectations — the third year of idolo, straying from the pastels and stepping into full, saturated volume.</p>
+  <span class="hero-tag">Est. as BAPR — Year 3</span>
+  <div class="scroll-cue">scroll ↓</div>
+</section>
+
+<section class="block" id="about">
+  <div class="wrap">
+    <div class="kicker">Who we are</div>
+    <h2 class="headline">On our previous <span class="script">journeys</span></h2>
+    <div class="about-grid">
+      <div>
+        <p>1DOLO is BAPR 3-1D's brand identity for A.Y. '26-'27 — the result of our block's combined efforts and hardships, built on top of two years of branding that came before it.</p>
+        <p>This is our third year, and we're straying from the thrill and naivety of the pastels. Our theme is about pushing past what we thought we were capable of, evolving past expectations, and becoming the guidance that the fresh eyes and voices who were once us now look up to.</p>
+        <p style="opacity:0.7; font-size:0.95rem;">Placeholder copy — swap in your block's own words whenever you're ready.</p>
+      </div>
+      <div>
+        <span class="theme-badge">Theme: Refresh</span>
+        <div class="about-card">
+          <h3>The block</h3>
+          <p>BAPR 3-1D — third year, first block. This site is the online home for everything under the 1DOLO name: announcements, pubmats, and the people behind them.</p>
+        </div>
+        <div class="about-card">
+          <h3>The name</h3>
+          <p>idolo carries the logomark from previous years — a rounded numeral hiding a star in its negative space — now paired with a new logotype set in Dx Lactos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="events">
+  <div class="wrap">
+    <div class="kicker">What's coming up</div>
+    <h2 class="headline">Block <span class="script">events</span></h2>
+    <div class="events-list">
+      <div class="event-row">
+        <div class="event-date">TBD</div>
+        <div>
+          <div class="event-name">General Assembly</div>
+          <div class="event-note">Block-wide meeting — details to follow.</div>
+        </div>
+        <div class="event-tag" style="background:var(--pink); color:var(--ink);">Announcement</div>
+      </div>
+      <div class="event-row">
+        <div class="event-date">TBD</div>
+        <div>
+          <div class="event-name">Block Bonding</div>
+          <div class="event-note">A day for the block to unwind together.</div>
+        </div>
+        <div class="event-tag" style="background:var(--green); color:var(--ink);">Social</div>
+      </div>
+      <div class="event-row">
+        <div class="event-date">TBD</div>
+        <div>
+          <div class="event-name">Committee Kickoff</div>
+          <div class="event-note">Committees introduce their plans for the year.</div>
+        </div>
+        <div class="event-tag" style="background:var(--orange); color:var(--ink);">Org</div>
+      </div>
+    </div>
+    <p class="placeholder-note">Placeholder events — real dates and details go here once they're set.</p>
+  </div>
+</section>
+
+<section class="block" id="gallery">
+  <div class="wrap">
+    <div class="kicker">Pubmats & posts</div>
+    <h2 class="headline">Gallery <span class="script">samples</span></h2>
+    <div class="gallery-grid">
+      <div class="pubmat" style="background:var(--pink); color:var(--cream);">
+        <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
+        <div class="pm-caption">And I don't smoke, except for when I'm missing you</div>
+      </div>
+      <div class="pubmat" style="background:var(--blue); color:var(--ink);">
+        <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
+        <div class="pm-caption">And in a big city, you can start over</div>
+      </div>
+      <div class="pubmat" style="background:linear-gradient(135deg,var(--orange),var(--pink)); color:var(--night);">
+        <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
+        <div class="pm-caption">New things are upon us</div>
+      </div>
+      <div class="pubmat" style="background:var(--green); color:var(--ink);">
+        <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
+        <div class="pm-caption">Merry Christmas!</div>
+      </div>
+      <div class="pubmat" style="background:var(--night); color:var(--cream);">
+        <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
+        <div class="pm-caption">This too, shall pass</div>
+      </div>
+      <div class="pubmat" style="background:var(--yellow); color:var(--ink);">
+        <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
+        <div class="pm-caption">The trees are coming down</div>
+      </div>
+    </div>
+    <p class="placeholder-note">Sample layouts pulled from the guideline's pubmat page — drop in real posts as they're published.</p>
+  </div>
+</section>
+
+<section class="block" id="credits">
+  <div class="wrap">
+    <div class="kicker">Made by the block</div>
+    <h2 class="headline">Credits & <span class="script">committee</span></h2>
+    <div class="heads">
+      <div>
+        <div class="role">Committee Head</div>
+        <div class="name">Shane Paul Alimboyao</div>
+      </div>
+      <div>
+        <div class="role">Committee Co-Head</div>
+        <div class="name">Eunice Birung</div>
+      </div>
+    </div>
+    <div class="committee-grid">
+      <span class="lead">Members</span><span></span><span></span>
+      <span>Brielle Alamo</span><span>Chloe Espineli</span><span>Arwen Valencia</span>
+      <span>Jaezen Ang</span><span>Shannen Provadora</span><span>Raven Yutatco</span>
+      <span>Kent Bulanon</span><span>Lanz Francisco</span><span></span>
+      <span>Nadine Burgos</span><span>Stephanie Regonia</span><span></span>
+      <span>John Raphael Camua</span><span>Lourdes Santelices</span><span></span>
+      <span></span><span>Mikylla Sta. Maria</span><span></span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-logo">idolo</div>
+  <div>BAPR 3-1D · Brand Refresh Guidelines '26-'27 · @the1dolo</div>
+</footer>
+
+<script>
+(function(){
+  var wrap = document.getElementById('travelingLogo');
+  var spacer = document.getElementById('heroLogoSpacer');
+  var blurSpans = document.querySelectorAll('.topbar-fade span[data-blur]');
+  var pinkSection = document.getElementById('about');
+  if(!wrap || !spacer) return;
+  var imgs = wrap.querySelectorAll('img');
+
+  var TRANSITION_DISTANCE = 280; // px of scroll over which the logo travels from hero to bar
+  var SMALL_W = 150, SMALL_H = 44, SMALL_TOP = 14; // must match the bar's own logo slot
+  var BIG_W = 0, BIG_H = 0, BIG_TOP = 0;
+  var PINK_START = 1; // scroll distance at which the blur should be fully visible
+
+  function measureBig(){
+    var rect = spacer.getBoundingClientRect();
+    BIG_W = rect.width;
+    BIG_H = rect.height;
+    // reference the spacer's position as it sits at the top of the page (scroll 0)
+    BIG_TOP = rect.top + window.scrollY;
+  }
+
+  function measurePink(){
+    if(pinkSection){
+      var rect = pinkSection.getBoundingClientRect();
+      PINK_START = Math.max(1, rect.top + window.scrollY);
+    }
+  }
+
+  function lerp(a, b, t){ return a + (b - a) * t; }
+
+  // colour-cycling state — only runs once the logo has fully landed in the bar
+  var current = 0;
+  var accum = 0;
+  var PIXELS_PER_STEP = 90; // scroll distance needed to advance one logo once docked
+  var lastDockedY = null;
+
+  var starIcon = document.querySelector('.hamburger svg');
+  var LOGO_COLORS = ['#f2efe7', '#75db4a', '#f6ef3d', '#38b6ff', '#ff3131', '#ff559d'];
+  function setStarColor(idx){
+    if(starIcon) starIcon.style.fill = LOGO_COLORS[idx % LOGO_COLORS.length];
+  }
+  setStarColor(current);
+
+  // known section background colours, checked against whichever section
+  // currently sits behind the docked logo (near the top of the viewport)
+  var COLOR_SECTIONS = [
+    { el: document.getElementById('about'),   color: '#ff559d' },
+    { el: document.getElementById('events'),  color: '#38b6ff' },
+    { el: document.getElementById('gallery'), color: '#f6ef3d' },
+    { el: document.getElementById('credits'), color: null }
+  ];
+
+  function getBackgroundColorBehindLogo(){
+    var probeY = 20; // near the top of the viewport, where the docked logo sits
+    for(var i=0; i<COLOR_SECTIONS.length; i++){
+      var sec = COLOR_SECTIONS[i];
+      if(!sec.el) continue;
+      var rect = sec.el.getBoundingClientRect();
+      if(rect.top <= probeY && rect.bottom > probeY){
+        return sec.color;
+      }
+    }
+    return null;
+  }
+
+  function updateLogoShadow(){
+    if(!imgs[current]) return;
+    var bg = getBackgroundColorBehindLogo();
+    imgs[current].classList.toggle('blend-shadow', bg === LOGO_COLORS[current]);
+  }
+
+  function advance(steps){
+    for(var s=0; s<steps; s++){
+      imgs[current].classList.remove('active');
+      imgs[current].classList.remove('blend-shadow');
+      current = (current + 1) % imgs.length;
+      imgs[current].classList.add('active');
+    }
+    setStarColor(current);
+  }
+
+  var ticking = false;
+  function update(){
+    var y = window.scrollY;
+    var progress = Math.max(0, Math.min(1, y / TRANSITION_DISTANCE));
+
+    var w = lerp(BIG_W, SMALL_W, progress);
+    var h = lerp(BIG_H, SMALL_H, progress);
+    var top = lerp(BIG_TOP - y, SMALL_TOP, progress);
+
+    wrap.style.width = w + 'px';
+    wrap.style.height = h + 'px';
+    wrap.style.top = top + 'px';
+
+    // blur is invisible at the very top of the page and ramps up to full
+    // strength by the time the user has scrolled down to the pink section
+    var fadeProgress = Math.max(0, Math.min(1, y / PINK_START));
+    for(var i=0; i<blurSpans.length; i++){
+      var base = parseFloat(blurSpans[i].dataset.blur) || 0;
+      var amount = (base * fadeProgress).toFixed(2);
+      blurSpans[i].style.backdropFilter = 'blur(' + amount + 'px)';
+      blurSpans[i].style.webkitBackdropFilter = 'blur(' + amount + 'px)';
+    }
+
+    if(progress >= 1){
+      if(lastDockedY === null) lastDockedY = y;
+      accum += Math.abs(y - lastDockedY);
+      lastDockedY = y;
+      if(accum >= PIXELS_PER_STEP){
+        var steps = Math.floor(accum / PIXELS_PER_STEP);
+        accum -= steps * PIXELS_PER_STEP;
+        advance(steps);
+      }
+    } else {
+      lastDockedY = null; // reset so cycling starts fresh each time it re-docks
+    }
+
+    updateLogoShadow();
+    ticking = false;
+  }
+
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', function(){
+    measureBig();
+    measurePink();
+    update();
+  });
+
+  measureBig();
+  measurePink();
+  update();
+  updateLogoShadow();
+})();
+
+(function(){
+  var toggle = document.getElementById('menuToggle');
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('menuBackdrop');
+  if(!toggle || !menu || !backdrop) return;
+
+  function closeMenu(){
+    toggle.classList.remove('open');
+    menu.classList.remove('open');
+    backdrop.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+  }
+  function toggleMenu(){
+    var isOpen = menu.classList.toggle('open');
+    toggle.classList.toggle('open', isOpen);
+    backdrop.classList.toggle('open', isOpen);
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  }
+
+  toggle.addEventListener('click', toggleMenu);
+  backdrop.addEventListener('click', closeMenu);
+  menu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', closeMenu);
+  });
+})();
+</script>
+
+</body>
+</html>
