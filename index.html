@@ -113,8 +113,12 @@
     top:0;
     z-index:52;
     pointer-events:none;
-    /* width/height/top set dynamically by script; these are just a sane fallback */
+    /* width/height set once (by script) to the big hero size; from then on
+       only `transform` changes on scroll, so the browser can animate this
+       on the compositor instead of re-running layout every frame */
     width:150px; height:44px;
+    transform-origin:50% 0%;
+    will-change:transform;
     transform:translateX(-50%);
   }
   .logo-cycle img{
@@ -358,7 +362,7 @@
 </nav>
 
 <section class="hero" id="top">
-  <video class="hero-video" autoplay muted loop playsinline preload="metadata">
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline webkit-playsinline="true" preload="auto">
     <source src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Frame1bwiset%201_1.mp4" type="video/mp4">
   </video>
   <div class="hero-overlay"></div>
@@ -505,6 +509,7 @@
   var SMALL_W = 150, SMALL_H = 44, SMALL_TOP = 14; // must match the bar's own logo slot
   var BIG_W = 0, BIG_H = 0, BIG_TOP = 0;
   var PINK_START = 1; // scroll distance at which the blur should be fully visible
+  var lastFadeProgress = -1;
 
   function measureBig(){
     var rect = spacer.getBoundingClientRect();
@@ -512,6 +517,12 @@
     BIG_H = rect.height;
     // reference the spacer's position as it sits at the top of the page (scroll 0)
     BIG_TOP = rect.top + window.scrollY;
+    // set the box to its big size once — per-frame updates below only touch
+    // `transform`, which Safari can animate on the compositor without
+    // re-running layout on every scroll tick (this is what was causing the
+    // jitter on iOS)
+    wrap.style.width = BIG_W + 'px';
+    wrap.style.height = BIG_H + 'px';
   }
 
   function measurePink(){
@@ -574,27 +585,28 @@
     setStarColor(current);
   }
 
-  var ticking = false;
   function update(){
     var y = window.scrollY;
     var progress = Math.max(0, Math.min(1, y / TRANSITION_DISTANCE));
 
-    var w = lerp(BIG_W, SMALL_W, progress);
-    var h = lerp(BIG_H, SMALL_H, progress);
-    var top = lerp(BIG_TOP - y, SMALL_TOP, progress);
+    var scale = BIG_W > 0 ? lerp(1, SMALL_W / BIG_W, progress) : 1;
+    var translateY = lerp(BIG_TOP - y, SMALL_TOP, progress);
 
-    wrap.style.width = w + 'px';
-    wrap.style.height = h + 'px';
-    wrap.style.top = top + 'px';
+    wrap.style.transform = 'translateX(-50%) translateY(' + translateY.toFixed(2) + 'px) scale(' + scale.toFixed(4) + ')';
 
     // blur is invisible at the very top of the page and ramps up to full
-    // strength by the time the user has scrolled down to the pink section
+    // strength by the time the user has scrolled down to the pink section.
+    // Skip re-writing backdrop-filter once it's settled at either end —
+    // recalculating it across every span each frame is itself costly on iOS.
     var fadeProgress = Math.max(0, Math.min(1, y / PINK_START));
-    for(var i=0; i<blurSpans.length; i++){
-      var base = parseFloat(blurSpans[i].dataset.blur) || 0;
-      var amount = (base * fadeProgress).toFixed(2);
-      blurSpans[i].style.backdropFilter = 'blur(' + amount + 'px)';
-      blurSpans[i].style.webkitBackdropFilter = 'blur(' + amount + 'px)';
+    if(fadeProgress !== lastFadeProgress){
+      lastFadeProgress = fadeProgress;
+      for(var i=0; i<blurSpans.length; i++){
+        var base = parseFloat(blurSpans[i].dataset.blur) || 0;
+        var amount = (base * fadeProgress).toFixed(2);
+        blurSpans[i].style.backdropFilter = 'blur(' + amount + 'px)';
+        blurSpans[i].style.webkitBackdropFilter = 'blur(' + amount + 'px)';
+      }
     }
 
     if(progress >= 1){
@@ -611,16 +623,17 @@
     }
 
     updateLogoShadow();
-    ticking = false;
   }
 
-  function onScroll(){
-    if(ticking) return;
-    ticking = true;
-    requestAnimationFrame(update);
+  // iOS Safari fires `scroll` events unevenly during momentum scrolling, which
+  // made the scroll-linked update above stutter. Driving it from a persistent
+  // rAF loop instead keeps it in step with every rendered frame.
+  var rafId = null;
+  function loop(){
+    update();
+    rafId = requestAnimationFrame(loop);
   }
 
-  window.addEventListener('scroll', onScroll, {passive:true});
   window.addEventListener('resize', function(){
     measureBig();
     measurePink();
@@ -629,8 +642,8 @@
 
   measureBig();
   measurePink();
-  update();
   updateLogoShadow();
+  loop();
 })();
 
 (function(){
@@ -657,6 +670,33 @@
   menu.querySelectorAll('a').forEach(function(a){
     a.addEventListener('click', closeMenu);
   });
+})();
+
+(function(){
+  var video = document.getElementById('heroVideo');
+  if(!video) return;
+
+  function tryPlay(){
+    var p = video.play();
+    if(p && typeof p.catch === 'function'){
+      p.catch(function(){
+        // autoplay was blocked — start it on the first touch/click instead
+        var resume = function(){
+          video.play();
+          document.removeEventListener('touchstart', resume);
+          document.removeEventListener('click', resume);
+        };
+        document.addEventListener('touchstart', resume, {once:true, passive:true});
+        document.addEventListener('click', resume, {once:true});
+      });
+    }
+  }
+
+  if(video.readyState >= 2){
+    tryPlay();
+  } else {
+    video.addEventListener('loadeddata', tryPlay, {once:true});
+  }
 })();
 </script>
 
