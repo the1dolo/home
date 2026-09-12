@@ -81,16 +81,12 @@
 
   /* ---------- nav ---------- */
   .topbar{
-    position:sticky; top:0; z-index:65;
+    position:sticky; top:0; z-index:50;
     display:flex; align-items:flex-start; justify-content:center;
     padding:14px 28px 130px;
     margin-bottom:-188px;
     color:var(--cream);
     border-bottom:none;
-    /* the padding above makes this box much taller than what's visually
-       shown (needed for the blur fade-out below) — without this, raising
-       it above the full-screen menu would block clicks on menu links
-       sitting underneath that invisible area */
     pointer-events:none;
   }
   .topbar-fade{
@@ -158,14 +154,10 @@
     filter: drop-shadow(0 1px 4px rgba(0,0,0,.35));
   }
   .logo-cycle img.active{ opacity:1; }
-  .topbar-inner{
-    position:relative; z-index:1;
-    width:100%; height:44px;
-    pointer-events:none;
-  }
   .hamburger{
-    position:absolute; right:0; top:50%;
+    position:fixed; top:36px; right:28px;
     transform:translateY(-50%);
+    z-index:70;
     display:flex; align-items:center; justify-content:center;
     width:50px; height:50px;
     background:none; border:none; padding:0; cursor:pointer;
@@ -388,12 +380,11 @@
   <div class="topbar-fade" aria-hidden="true">
     <span></span><span data-blur="24"></span><span data-blur="18"></span><span data-blur="13"></span><span data-blur="9"></span><span data-blur="5"></span><span data-blur="2"></span>
   </div>
-  <div class="topbar-inner">
-    <button class="hamburger" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
-      <svg viewBox="0 0 24 24"><path d="M12 2.5l2.95 6.28 6.93.7-5.19 4.71 1.5 6.81L12 17.27l-6.19 3.73 1.5-6.81-5.19-4.71 6.93-.7z"/></svg>
-    </button>
-  </div>
 </div>
+
+<button class="hamburger" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+  <svg viewBox="0 0 24 24"><path d="M12 2.5l2.95 6.28 6.93.7-5.19 4.71 1.5 6.81L12 17.27l-6.19 3.73 1.5-6.81-5.19-4.71 6.93-.7z"/></svg>
+</button>
 
 <div class="logo-cycle" id="travelingLogo">
   <img class="active" src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%205logotype.png" alt="idolo logotype variant 5">
@@ -403,6 +394,7 @@
   <img src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%204logotype.png" alt="idolo logotype variant 4">
   <img src="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Asset%206logotype.png" alt="idolo logotype variant 6">
 </div>
+
 
 <div class="menu-backdrop" id="menuBackdrop"></div>
 <nav class="mobile-menu" id="mobileMenu">
