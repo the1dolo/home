@@ -3,10 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>idolo — BAPR 3-1D Brand Refresh '26-'27</title>
+<title>idolo</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" href="https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Artboard%204%20copy%402x.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Caveat+Brush&family=Inter:ital,wght@0,400;0,600;0,700;1,700;1,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;1,700;1,800&display=swap" rel="stylesheet">
 <style>
+  @font-face{
+    font-family:'DxLactos';
+    src:url('https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/DxLactos-Regular-free-personal-use.otf') format('opentype');
+    font-weight:400 800;
+    font-style:normal;
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'Mayluna';
+    src:url('https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/mayluna.otf') format('opentype');
+    font-weight:normal;
+    font-style:normal;
+    font-display:swap;
+  }
   :root{
     --ink:#2b0c06;
     --night:#1c1a19;
@@ -18,8 +34,8 @@
     --red:#ff3131;
     --orange:#ff914d;
     --purple:#a424b7;
-    --display: 'Baloo 2', sans-serif;
-    --accent: 'Caveat Brush', cursive;
+    --display: 'DxLactos', sans-serif;
+    --accent: 'Mayluna', cursive;
     --body: 'Inter', sans-serif;
   }
   *{box-sizing:border-box;}
@@ -54,6 +70,7 @@
     font-family:var(--accent);
     font-weight:400;
     letter-spacing:0.01em;
+    font-size:1.25em;
   }
   p{ line-height:1.55; font-size:1.05rem; }
   a{color:inherit;}
@@ -64,12 +81,17 @@
 
   /* ---------- nav ---------- */
   .topbar{
-    position:sticky; top:0; z-index:50;
+    position:sticky; top:0; z-index:65;
     display:flex; align-items:flex-start; justify-content:center;
     padding:14px 28px 130px;
     margin-bottom:-188px;
     color:var(--cream);
     border-bottom:none;
+    /* the padding above makes this box much taller than what's visually
+       shown (needed for the blur fade-out below) — without this, raising
+       it above the full-screen menu would block clicks on menu links
+       sitting underneath that invisible area */
+    pointer-events:none;
   }
   .topbar-fade{
     position:absolute; inset:0;
@@ -120,7 +142,12 @@
     transform-origin:50% 0%;
     will-change:transform;
     transform:translateX(-50%);
+    /* stays hidden until the script below has measured the hero spacer and
+       applied the correct position/scale — this rules out any flash of the
+       small fallback size sitting in the topbar before JS runs */
+    opacity:0;
   }
+  .logo-cycle.ready{ opacity:1; }
   .logo-cycle img{
     position:absolute; inset:0;
     width:100%; height:100%;
@@ -134,6 +161,7 @@
   .topbar-inner{
     position:relative; z-index:1;
     width:100%; height:44px;
+    pointer-events:none;
   }
   .hamburger{
     position:absolute; right:0; top:50%;
@@ -141,6 +169,7 @@
     display:flex; align-items:center; justify-content:center;
     width:50px; height:50px;
     background:none; border:none; padding:0; cursor:pointer;
+    pointer-events:auto;
   }
   .hamburger svg{
     width:48px; height:48px;
@@ -149,22 +178,44 @@
   }
   .hamburger.open svg{ transform:rotate(45deg); }
   .mobile-menu{
-    position:fixed; top:0; right:0;
-    height:100%; width:min(260px, 72vw);
+    position:fixed; inset:0;
     background:var(--night);
     color:var(--cream);
     display:flex; flex-direction:column;
-    gap:6px;
-    padding:90px 32px 32px;
-    transform:translateX(100%);
-    transition:transform .3s ease;
+    justify-content:center;
+    gap:clamp(6px, 2vw, 18px);
+    padding:90px 32px 60px;
+    transform:translateY(-100%);
+    transition:transform .45s cubic-bezier(.65,0,.35,1);
     z-index:60;
+    overflow:hidden;
   }
-  .mobile-menu.open{ transform:translateX(0); }
+  .mobile-menu.open{ transform:translateY(0); }
   .mobile-menu a{
     color:var(--cream); text-decoration:none;
-    font-family:var(--display); font-weight:700; font-size:1.2rem;
-    padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.12);
+    font-family:var(--display); font-weight:800;
+    font-size:clamp(2.6rem, 13vw, 5.5rem);
+    line-height:1;
+    letter-spacing:-0.02em;
+    padding:6px 0;
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity .5s ease, transform .5s ease, color .2s ease;
+  }
+  .mobile-menu.open a{ opacity:1; transform:translateY(0); }
+  .mobile-menu.open a:nth-child(1){ transition-delay:.08s; }
+  .mobile-menu.open a:nth-child(2){ transition-delay:.16s; }
+  .mobile-menu.open a:nth-child(3){ transition-delay:.24s; }
+  .mobile-menu.open a:nth-child(4){ transition-delay:.32s; }
+  .mobile-menu a:nth-child(1):hover, .mobile-menu a:nth-child(1):focus{ color:var(--pink); }
+  .mobile-menu a:nth-child(2):hover, .mobile-menu a:nth-child(2):focus{ color:var(--blue); }
+  .mobile-menu a:nth-child(3):hover, .mobile-menu a:nth-child(3):focus{ color:var(--yellow); }
+  .mobile-menu a:nth-child(4):hover, .mobile-menu a:nth-child(4):focus{ color:var(--red); }
+  .mobile-menu .menu-index{
+    font-family:var(--body); font-weight:700; font-size:0.9rem;
+    color:rgba(255,255,255,0.4);
+    margin-right:14px;
+    vertical-align:middle;
   }
   .menu-backdrop{
     position:fixed; inset:0; background:rgba(0,0,0,0.4);
@@ -355,10 +406,10 @@
 
 <div class="menu-backdrop" id="menuBackdrop"></div>
 <nav class="mobile-menu" id="mobileMenu">
-  <a href="#about">About</a>
-  <a href="#events">Events</a>
-  <a href="#gallery">Gallery</a>
-  <a href="#credits">Credits</a>
+  <a href="#about"><span class="menu-index">01</span>About</a>
+  <a href="#events"><span class="menu-index">02</span>Events</a>
+  <a href="#gallery"><span class="menu-index">03</span>Gallery</a>
+  <a href="#credits"><span class="menu-index">04</span>Credits</a>
 </nav>
 
 <section class="hero" id="top">
@@ -367,30 +418,29 @@
   </video>
   <div class="hero-overlay"></div>
   <div class="hero-logo-spacer" id="heroLogoSpacer"></div>
-  <p class="hero-sub">Pushing past our perceived potentials, evolving past expectations — the third year of idolo, straying from the pastels and stepping into full, saturated volume.</p>
-  <span class="hero-tag">Est. as BAPR — Year 3</span>
+  <p class="hero-sub">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <span class="hero-tag">Est. 2026</span>
   <div class="scroll-cue">scroll ↓</div>
 </section>
 
 <section class="block" id="about">
   <div class="wrap">
     <div class="kicker">Who we are</div>
-    <h2 class="headline">On our previous <span class="script">journeys</span></h2>
+    <h2 class="headline">About</h2>
     <div class="about-grid">
       <div>
-        <p>1DOLO is BAPR 3-1D's brand identity for A.Y. '26-'27 — the result of our block's combined efforts and hardships, built on top of two years of branding that came before it.</p>
-        <p>This is our third year, and we're straying from the thrill and naivety of the pastels. Our theme is about pushing past what we thought we were capable of, evolving past expectations, and becoming the guidance that the fresh eyes and voices who were once us now look up to.</p>
-        <p style="opacity:0.7; font-size:0.95rem;">Placeholder copy — swap in your block's own words whenever you're ready.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
       </div>
       <div>
-        <span class="theme-badge">Theme: Refresh</span>
+        <span class="theme-badge">Theme: Sample</span>
         <div class="about-card">
-          <h3>The block</h3>
-          <p>BAPR 3-1D — third year, first block. This site is the online home for everything under the 1DOLO name: announcements, pubmats, and the people behind them.</p>
+          <h3>Overview</h3>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
         </div>
         <div class="about-card">
-          <h3>The name</h3>
-          <p>idolo carries the logomark from previous years — a rounded numeral hiding a star in its negative space — now paired with a new logotype set in Dx Lactos.</p>
+          <h3>Details</h3>
+          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
         </div>
       </div>
     </div>
@@ -400,100 +450,100 @@
 <section class="block" id="events">
   <div class="wrap">
     <div class="kicker">What's coming up</div>
-    <h2 class="headline">Block <span class="script">events</span></h2>
+    <h2 class="headline">Events</h2>
     <div class="events-list">
       <div class="event-row">
         <div class="event-date">TBD</div>
         <div>
-          <div class="event-name">General Assembly</div>
-          <div class="event-note">Block-wide meeting — details to follow.</div>
+          <div class="event-name">Sample Event One</div>
+          <div class="event-note">Lorem ipsum dolor sit amet, consectetur.</div>
         </div>
         <div class="event-tag" style="background:var(--pink); color:var(--ink);">Announcement</div>
       </div>
       <div class="event-row">
         <div class="event-date">TBD</div>
         <div>
-          <div class="event-name">Block Bonding</div>
-          <div class="event-note">A day for the block to unwind together.</div>
+          <div class="event-name">Sample Event Two</div>
+          <div class="event-note">Consectetur adipiscing elit sed do eiusmod.</div>
         </div>
         <div class="event-tag" style="background:var(--green); color:var(--ink);">Social</div>
       </div>
       <div class="event-row">
         <div class="event-date">TBD</div>
         <div>
-          <div class="event-name">Committee Kickoff</div>
-          <div class="event-note">Committees introduce their plans for the year.</div>
+          <div class="event-name">Sample Event Three</div>
+          <div class="event-note">Tempor incididunt ut labore et dolore.</div>
         </div>
         <div class="event-tag" style="background:var(--orange); color:var(--ink);">Org</div>
       </div>
     </div>
-    <p class="placeholder-note">Placeholder events — real dates and details go here once they're set.</p>
+    <p class="placeholder-note">Sample events — replace with real dates and details.</p>
   </div>
 </section>
 
 <section class="block" id="gallery">
   <div class="wrap">
-    <div class="kicker">Pubmats & posts</div>
-    <h2 class="headline">Gallery <span class="script">samples</span></h2>
+    <div class="kicker">Selected work</div>
+    <h2 class="headline">Gallery</h2>
     <div class="gallery-grid">
       <div class="pubmat" style="background:var(--pink); color:var(--cream);">
         <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
-        <div class="pm-caption">And I don't smoke, except for when I'm missing you</div>
+        <div class="pm-caption">Lorem ipsum dolor sit amet</div>
       </div>
       <div class="pubmat" style="background:var(--blue); color:var(--ink);">
         <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
-        <div class="pm-caption">And in a big city, you can start over</div>
+        <div class="pm-caption">Consectetur adipiscing elit</div>
       </div>
       <div class="pubmat" style="background:linear-gradient(135deg,var(--orange),var(--pink)); color:var(--night);">
         <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
-        <div class="pm-caption">New things are upon us</div>
+        <div class="pm-caption">Sed do eiusmod tempor</div>
       </div>
       <div class="pubmat" style="background:var(--green); color:var(--ink);">
         <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
-        <div class="pm-caption">Merry Christmas!</div>
+        <div class="pm-caption">Incididunt ut labore</div>
       </div>
       <div class="pubmat" style="background:var(--night); color:var(--cream);">
         <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
-        <div class="pm-caption">This too, shall pass</div>
+        <div class="pm-caption">Et dolore magna aliqua</div>
       </div>
       <div class="pubmat" style="background:var(--yellow); color:var(--ink);">
         <div style="display:flex; justify-content:space-between;"><span class="pm-logo">idolo</span><span class="pm-handle">@the1dolo</span></div>
-        <div class="pm-caption">The trees are coming down</div>
+        <div class="pm-caption">Ut enim ad minim veniam</div>
       </div>
     </div>
-    <p class="placeholder-note">Sample layouts pulled from the guideline's pubmat page — drop in real posts as they're published.</p>
+    <p class="placeholder-note">Sample layouts — drop in real posts as they're published.</p>
   </div>
 </section>
 
 <section class="block" id="credits">
   <div class="wrap">
-    <div class="kicker">Made by the block</div>
-    <h2 class="headline">Credits & <span class="script">committee</span></h2>
+    <div class="kicker">The team</div>
+    <h2 class="headline">Credits</h2>
     <div class="heads">
       <div>
-        <div class="role">Committee Head</div>
-        <div class="name">Shane Paul Alimboyao</div>
+        <div class="role">Role Title</div>
+        <div class="name">Full Name</div>
       </div>
       <div>
-        <div class="role">Committee Co-Head</div>
-        <div class="name">Eunice Birung</div>
+        <div class="role">Role Title</div>
+        <div class="name">Full Name</div>
       </div>
     </div>
     <div class="committee-grid">
       <span class="lead">Members</span><span></span><span></span>
-      <span>Brielle Alamo</span><span>Chloe Espineli</span><span>Arwen Valencia</span>
-      <span>Jaezen Ang</span><span>Shannen Provadora</span><span>Raven Yutatco</span>
-      <span>Kent Bulanon</span><span>Lanz Francisco</span><span></span>
-      <span>Nadine Burgos</span><span>Stephanie Regonia</span><span></span>
-      <span>John Raphael Camua</span><span>Lourdes Santelices</span><span></span>
-      <span></span><span>Mikylla Sta. Maria</span><span></span>
+      <span>Full Name</span><span>Full Name</span><span>Full Name</span>
+      <span>Full Name</span><span>Full Name</span><span>Full Name</span>
+      <span>Full Name</span><span>Full Name</span><span></span>
+      <span>Full Name</span><span>Full Name</span><span></span>
+      <span>Full Name</span><span>Full Name</span><span></span>
+      <span></span><span>Full Name</span><span></span>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="foot-logo">idolo</div>
-  <div>BAPR 3-1D · Brand Refresh Guidelines '26-'27 · @the1dolo</div>
+  <div>Sample footer text · Replace with your own details</div>
 </footer>
 
 <script>
@@ -644,6 +694,7 @@
   measurePink();
   updateLogoShadow();
   loop();
+  wrap.classList.add('ready');
 })();
 
 (function(){
