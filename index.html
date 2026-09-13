@@ -42,15 +42,15 @@
   html{scroll-behavior:smooth;}
 
   /* ---------- scrollbar ---------- */
-  html{ scrollbar-color: var(--pink) var(--night); }
+  html{ scrollbar-color: var(--night) var(--pink); }
   ::-webkit-scrollbar{ width:12px; height:12px; }
-  ::-webkit-scrollbar-track{ background:var(--night); }
+  ::-webkit-scrollbar-track{ background:var(--pink); }
   ::-webkit-scrollbar-thumb{
-    background:var(--pink);
+    background:var(--night);
     border-radius:999px;
-    border:3px solid var(--night);
+    border:3px solid var(--pink);
   }
-  ::-webkit-scrollbar-thumb:hover{ background:var(--pink); }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--ink); }
 
   body{
     margin:0;
@@ -332,6 +332,17 @@
 
   /* ---------- gallery ---------- */
   #gallery{ background:var(--yellow); color:var(--ink); }
+
+  /* ---------- facebook embed ---------- */
+  #facebook{ background:var(--orange); color:var(--ink); }
+  .fb-embed-card{
+    background:var(--cream);
+    border:3px solid var(--ink);
+    border-radius:18px;
+    padding:20px;
+    max-width:540px;
+    overflow:hidden;
+  }
   .gallery-grid{
     display:grid; grid-template-columns:repeat(3,1fr); gap:18px;
   }
@@ -410,7 +421,7 @@
   </video>
   <div class="hero-overlay"></div>
   <div class="hero-logo-spacer" id="heroLogoSpacer"></div>
-  <p class="hero-sub">Pero aminin mo nay.. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p class="hero-sub">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
   <span class="hero-tag">Est. 2026</span>
   <div class="scroll-cue">scroll ↓</div>
 </section>
@@ -507,6 +518,29 @@
   </div>
 </section>
 
+<section class="block" id="facebook">
+  <div class="wrap">
+    <div class="kicker">Latest update</div>
+    <h2 class="headline">From Facebook</h2>
+    <div class="fb-embed-card">
+      <div id="fb-root"></div>
+      <div class="fb-page"
+        data-href="https://www.facebook.com/profile.php?id=61565202106574"
+        data-tabs="timeline"
+        data-width="500"
+        data-height="620"
+        data-small-header="true"
+        data-adapt-container-width="true"
+        data-hide-cover="false"
+        data-show-facepile="false">
+        <blockquote cite="https://www.facebook.com/profile.php?id=61565202106574" class="fb-xfbml-parse-ignore">
+          <a href="https://www.facebook.com/profile.php?id=61565202106574">View our latest posts on Facebook</a>
+        </blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="block" id="credits">
   <div class="wrap">
     <div class="kicker">The team</div>
@@ -535,7 +569,7 @@
 
 <footer>
   <div class="foot-logo">idolo</div>
-  <div>Sample footer text · hirap leche</div>
+  <div>Sample footer text · Replace with your own details</div>
 </footer>
 
 <script>
@@ -742,6 +776,8 @@
   }
 })();
 </script>
+
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v19.0"></script>
 
 </body>
 </html>
