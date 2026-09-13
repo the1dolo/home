@@ -483,6 +483,30 @@
 
   /* ---------- card lineup (fanned like a hand of cards) ---------- */
   #lineup{ background:#202020; color:var(--cream); }
+  .lineup-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:20px; margin-bottom:26px;
+  }
+  .lineup-head .headline{ margin-bottom:0; }
+  .lineup-toggle{
+    display:flex; align-items:center; gap:8px; flex:0 0 auto;
+    background:transparent; border:2px solid var(--cream); color:var(--cream);
+    border-radius:999px; padding:10px 20px;
+    font-family:var(--body); font-weight:700; font-size:0.85rem;
+    cursor:pointer;
+    transition:background 200ms ease, color 200ms ease;
+  }
+  .lineup-toggle:hover{ background:var(--cream); color:var(--night); }
+  .lineup-toggle:disabled{ opacity:0.4; cursor:default; pointer-events:none; }
+  .lineup-toggle-icon{
+    display:inline-block; font-size:0.7rem;
+    transition:transform 300ms ease;
+  }
+  .lineup-toggle[aria-expanded="true"] .lineup-toggle-icon{ transform:rotate(180deg); }
+  @media (max-width:480px){
+    .lineup-head{ gap:12px; }
+    .lineup-toggle{ padding:8px 14px; font-size:0.78rem; }
+  }
   .lineup-row{
     --count:8;
     --spread:5deg;
@@ -508,6 +532,7 @@
     height:100%;
     border-radius:19px;
     overflow:hidden;
+    position:relative;
     background:url('https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Artboard%201%20copy%202.png') center/cover no-repeat;
     box-shadow:-4px 4px 10px rgba(0,0,0,0.28);
     transition:transform 280ms ease-out;
@@ -549,6 +574,17 @@
     flex-wrap:wrap;
     justify-content:center;
     gap:10px;
+    overflow:hidden;
+  }
+  .lineup-grid-wrap{ position:relative; }
+  .grid-card.peek .lineup-card-face::after{
+    content:'';
+    position:absolute; left:0; right:0;
+    bottom:var(--fade-bottom, 0px);
+    height:var(--fade-height, 0px);
+    background:linear-gradient(to bottom, rgba(32,32,32,0) 0%, #202020 100%);
+    opacity:var(--fade-opacity, 0);
+    pointer-events:none;
   }
   .lineup-grid.ready{ display:flex; }
   .grid-card{
@@ -564,8 +600,8 @@
     transform:translateY(0);
   }
   @media (max-width:640px){
-    .lineup-grid{ gap:18px; }
-    .grid-card{ flex-basis:calc((100% - 1 * 18px) / 2); }
+    .lineup-grid{ gap:10px; }
+    .grid-card{ flex-basis:calc((100% - 2 * 10px) / 3); }
   }
 
   /* ---------- credits ---------- */
@@ -781,7 +817,13 @@
 
 <section class="block" id="lineup">
   <div class="wrap">
-    <h2 class="headline">Meet 1DOLO</h2>
+    <div class="lineup-head">
+      <h2 class="headline">Meet 1DOLO</h2>
+      <button type="button" class="lineup-toggle" id="lineupToggle" disabled aria-expanded="false" aria-controls="lineupGrid">
+        <span class="lineup-toggle-label">View all</span>
+        <span class="lineup-toggle-icon" aria-hidden="true">&#9662;</span>
+      </button>
+    </div>
     <div class="lineup-row">
       <div class="lineup-card" style="--i:0;"><div class="lineup-card-face"></div></div>
       <div class="lineup-card" style="--i:1;"><div class="lineup-card-face"></div></div>
@@ -792,7 +834,8 @@
       <div class="lineup-card" style="--i:6;"><div class="lineup-card-face"></div></div>
       <div class="lineup-card" style="--i:7;"><div class="lineup-card-face"></div></div>
     </div>
-    <div class="lineup-grid" id="lineupGrid">
+    <div class="lineup-grid-wrap">
+      <div class="lineup-grid" id="lineupGrid">
       <div class="grid-card" style="--gi:0;"><div class="lineup-card-face"></div></div>
       <div class="grid-card" style="--gi:1;"><div class="lineup-card-face"></div></div>
       <div class="grid-card" style="--gi:2;"><div class="lineup-card-face"></div></div>
@@ -846,6 +889,7 @@
       <div class="grid-card" style="--gi:50;"><div class="lineup-card-face"></div></div>
       <div class="grid-card" style="--gi:51;"><div class="lineup-card-face"></div></div>
       <div class="grid-card" style="--gi:52;"><div class="lineup-card-face"></div></div>
+      </div>
     </div>
   </div>
 </section>
@@ -1264,6 +1308,105 @@
   if(!lineup) return;
   var lineupRow = lineup.querySelector('.lineup-row');
   var grid = document.getElementById('lineupGrid');
+  var lineupToggle = document.getElementById('lineupToggle');
+  var lineupToggleLabel = lineupToggle ? lineupToggle.querySelector('.lineup-toggle-label') : null;
+  var lineupCollapsed = true;
+  var lineupAnimFrame = null;
+
+  // Cards in the grid's first visual row (their count varies by
+  // breakpoint - 5 on desktop, 3 on mobile - so this is read from layout
+  // rather than assumed).
+  function getFirstRowCards(){
+    if(!grid) return [];
+    var cards = grid.querySelectorAll('.grid-card');
+    if(!cards.length) return [];
+    var firstTop = cards[0].getBoundingClientRect().top;
+    var result = [];
+    for(var i = 0; i < cards.length; i++){
+      if(Math.abs(cards[i].getBoundingClientRect().top - firstTop) < 1) result.push(cards[i]);
+    }
+    return result;
+  }
+
+  // Paints each first-row card's own fade band to match a given container
+  // height, via CSS custom properties the ::after reads. Called on every
+  // frame of the height animation so the band's position is always
+  // derived from how much of that row is still clipped right now -
+  // that's what keeps it glued to the moving clip edge instead of just
+  // jumping between two fixed states.
+  function paintPeekFades(containerHeight, rowHeight, firstRowCards){
+    var allCards = grid.querySelectorAll('.grid-card');
+    for(var i = 0; i < allCards.length; i++){
+      var card = allCards[i];
+      var isFirstRow = firstRowCards.indexOf(card) !== -1;
+      card.classList.toggle('peek', isFirstRow);
+      if(!isFirstRow) continue;
+      var visible = Math.min(containerHeight, rowHeight);
+      var clipFromBottom = Math.max(0, rowHeight - visible);
+      var fadeHeight = Math.min(rowHeight * 0.25, visible);
+      card.style.setProperty('--fade-bottom', clipFromBottom + 'px');
+      card.style.setProperty('--fade-height', fadeHeight + 'px');
+      card.style.setProperty('--fade-opacity', clipFromBottom > 0.5 ? '1' : '0');
+    }
+  }
+
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+  // Animates the grid's max-height between its collapsed and full states.
+  // Driving this via rAF (rather than a CSS transition) means every frame
+  // can also repaint the peek fades against that exact same height, so
+  // the band and the clip edge never drift out of sync.
+  function animateLineupTo(collapsed, animate){
+    if(!grid) return;
+    var firstRowCards = getFirstRowCards();
+    var rowHeight = firstRowCards.length ? firstRowCards[0].getBoundingClientRect().height : 0;
+    var fullHeight = grid.scrollHeight;
+    var targetHeight = collapsed ? (rowHeight / 2) : fullHeight;
+
+    if(lineupAnimFrame){
+      cancelAnimationFrame(lineupAnimFrame);
+      lineupAnimFrame = null;
+    }
+
+    if(!animate){
+      grid.style.maxHeight = targetHeight + 'px';
+      paintPeekFades(targetHeight, rowHeight, firstRowCards);
+      return;
+    }
+
+    var startHeight = grid.getBoundingClientRect().height;
+    var duration = 420;
+    var startTime = null;
+    function step(ts){
+      if(startTime === null) startTime = ts;
+      var t = Math.min(1, (ts - startTime) / duration);
+      var eased = easeOutCubic(t);
+      var currentHeight = startHeight + (targetHeight - startHeight) * eased;
+      grid.style.maxHeight = currentHeight + 'px';
+      paintPeekFades(currentHeight, rowHeight, firstRowCards);
+      if(t < 1){
+        lineupAnimFrame = requestAnimationFrame(step);
+      } else {
+        lineupAnimFrame = null;
+      }
+    }
+    lineupAnimFrame = requestAnimationFrame(step);
+  }
+
+  function toggleLineup(){
+    lineupCollapsed = !lineupCollapsed;
+    if(lineupToggle) lineupToggle.setAttribute('aria-expanded', String(!lineupCollapsed));
+    if(lineupToggleLabel) lineupToggleLabel.textContent = lineupCollapsed ? 'View all' : 'Show less';
+    animateLineupTo(lineupCollapsed, true);
+  }
+
+  if(lineupToggle) lineupToggle.addEventListener('click', toggleLineup);
+
+  var lineupResizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(lineupResizeTimer);
+    lineupResizeTimer = setTimeout(function(){ animateLineupTo(lineupCollapsed, false); }, 150);
+  });
 
   function showGrid(){
     if(lineupRow) lineupRow.classList.add('done');
@@ -1275,6 +1418,12 @@
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         grid.classList.add('show');
+        animateLineupTo(lineupCollapsed, false);
+        // Only enable the toggle once the grid has real, measurable
+        // dimensions - clicking earlier (while it's still display:none
+        // during the fan intro) would read every height as 0 and the
+        // resulting state change would just snap in with no animation.
+        if(lineupToggle) lineupToggle.disabled = false;
       });
     });
   }
