@@ -373,12 +373,18 @@
   .fb-card-image{
     background:var(--pink); color:var(--cream);
     font-family:var(--display); font-weight:800; font-size:2rem;
-    text-align:center; padding:38px 10px;
+    text-align:center;
+    display:flex; align-items:center; justify-content:center;
+    height:180px;
+    background-size:cover;
+    background-position:center;
   }
+  .fb-card-image.has-photo{ color:transparent; }
   .fb-card-caption{
     background:var(--cream);
     font-family:var(--display); font-weight:700; font-size:1rem;
     padding:14px 16px; margin:0;
+    white-space:pre-line;
   }
   .fb-card-cta{
     display:inline-block;
@@ -565,7 +571,7 @@
   <div class="wrap">
     <div class="kicker">Latest update</div>
     <h2 class="headline">From Facebook</h2>
-    <a class="fb-card" href="https://www.facebook.com/profile.php?id=61565202106574" target="_blank" rel="noopener">
+    <a class="fb-card" id="fbCard" href="https://www.facebook.com/profile.php?id=61565202106574" target="_blank" rel="noopener">
       <div class="fb-card-head">
         <span class="fb-card-avatar">1D</span>
         <div>
@@ -577,8 +583,8 @@
         </span>
       </div>
       <div class="fb-card-post">
-        <div class="fb-card-image" aria-hidden="true">idolo</div>
-        <p class="fb-card-caption">Evolving with purpose.<br>#1DOLO</p>
+        <div class="fb-card-image" id="fbCardImage" aria-hidden="true"><span>idolo</span></div>
+        <p class="fb-card-caption" id="fbCardCaption">Evolving with purpose.<br>#1DOLO</p>
       </div>
       <span class="fb-card-cta">Follow on Facebook →</span>
     </a>
@@ -818,6 +824,67 @@
   } else {
     video.addEventListener('loadeddata', tryPlay, {once:true});
   }
+})();
+
+(function(){
+  var FEED_URL = 'https://rss.app/feeds/v1.1/P6uriUdUomcHzWDY.json';
+  // rss.app's free JSON feed doesn't send an Access-Control-Allow-Origin
+  // header, so a direct browser fetch gets blocked by CORS. We try the
+  // direct URL first (in case that ever changes), then fall back to a
+  // couple of public CORS proxies before giving up and leaving the static
+  // placeholder content in place.
+  var URLS_TO_TRY = [
+    FEED_URL,
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(FEED_URL),
+    'https://corsproxy.io/?url=' + encodeURIComponent(FEED_URL)
+  ];
+
+  var card = document.getElementById('fbCard');
+  var imageEl = document.getElementById('fbCardImage');
+  var captionEl = document.getElementById('fbCardCaption');
+  if(!card || !imageEl || !captionEl) return;
+
+  function cleanText(text){
+    return text
+      .split('\n')
+      .map(function(line){ return line.trim(); })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  function truncate(text, max){
+    if(text.length <= max) return text;
+    return text.slice(0, max).replace(/\s+\S*$/, '') + '…';
+  }
+
+  function tryFetch(i){
+    if(i >= URLS_TO_TRY.length) return; // all failed — keep static placeholder
+    fetch(URLS_TO_TRY[i])
+      .then(function(res){
+        if(!res.ok) throw new Error('bad status');
+        return res.json();
+      })
+      .then(function(data){
+        var post = data.items && data.items[0];
+        if(!post) throw new Error('no items');
+
+        if(post.url) card.href = post.url;
+
+        if(post.image){
+          imageEl.style.backgroundImage = 'url(' + post.image + ')';
+          imageEl.classList.add('has-photo');
+        }
+
+        if(post.content_text){
+          captionEl.textContent = truncate(cleanText(post.content_text), 160);
+        }
+      })
+      .catch(function(){
+        tryFetch(i + 1);
+      });
+  }
+
+  tryFetch(0);
 })();
 </script>
 
