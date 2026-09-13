@@ -333,11 +333,15 @@
   /* ---------- gallery ---------- */
   #gallery{ background:var(--yellow); color:var(--ink); }
 
-  /* ---------- facebook card ---------- */
-  #facebook{ background:var(--orange); color:var(--ink); }
+  /* ---------- social cards (Stay Updated) ---------- */
+  #social{ background:var(--purple); color:var(--cream); }
+  .social-cards{
+    display:flex; flex-wrap:wrap; gap:32px;
+    align-items:flex-start;
+  }
+  .fb-card, .ig-card{ flex:1 1 340px; max-width:420px; }
   .fb-card{
     display:block;
-    max-width:420px;
     background:var(--cream);
     color:var(--ink);
     text-decoration:none;
@@ -386,7 +390,7 @@
   .fb-card-image.has-photo{ color:transparent; }
   .fb-card-caption{
     background:var(--cream);
-    font-family:var(--display); font-weight:700; font-size:1rem;
+    font-family:var(--body); font-weight:700; font-size:1rem;
     padding:14px 16px; margin:0;
     white-space:pre-line;
   }
@@ -396,8 +400,6 @@
     background:var(--night); color:var(--cream);
     padding:10px 18px; border-radius:999px;
   }
-  /* ---------- instagram card ---------- */
-  #instagram{ background:var(--purple); color:var(--cream); }
   .ig-card{
     display:block;
     max-width:420px;
@@ -451,7 +453,7 @@
   .ig-card-image.has-photo{ color:transparent; }
   .ig-card-caption{
     background:var(--cream);
-    font-family:var(--display); font-weight:700; font-size:1rem;
+    font-family:var(--body); font-weight:700; font-size:1rem;
     padding:14px 16px; margin:0;
     white-space:pre-line;
   }
@@ -478,6 +480,93 @@
   .pubmat .pm-logo{ font-family:var(--display); font-weight:800; font-size:0.9rem; }
   .pubmat .pm-handle{ font-family:var(--body); font-weight:700; font-style:italic; font-size:0.72rem; text-align:right; }
   .pubmat .pm-caption{ font-family:var(--display); font-weight:700; font-size:1.05rem; }
+
+  /* ---------- card lineup (fanned like a hand of cards) ---------- */
+  #lineup{ background:#202020; color:var(--cream); }
+  .lineup-row{
+    --count:8;
+    --spread:5deg;
+    display:flex;
+    justify-content:center;
+    align-items:flex-end;
+    padding:70px 0 30px;
+  }
+  .lineup-card{
+    --rot: calc((var(--i) - (var(--count) - 1) / 2) * var(--spread));
+    --ty: calc(((var(--i) - (var(--count) - 1) / 2) * (var(--i) - (var(--count) - 1) / 2)) * 1.1px);
+    width:220px;
+    height:308px;
+    flex:0 0 auto;
+    transform-origin:bottom center;
+    transform: rotate(var(--rot)) translateY(var(--ty));
+    z-index:calc(var(--count) - var(--i));
+    margin-left:-128px;
+  }
+  .lineup-card:first-child{ margin-left:0; }
+  .lineup-card-face{
+    width:100%;
+    height:100%;
+    border-radius:19px;
+    overflow:hidden;
+    background:url('https://raw.githubusercontent.com/the1dolo/home/refs/heads/main/Artboard%201%20copy%202.png') center/cover no-repeat;
+    box-shadow:-4px 4px 10px rgba(0,0,0,0.28);
+    transition:transform 280ms ease-out;
+  }
+  .lineup-card:hover .lineup-card-face{
+    transform:translateY(-22px);
+    transition:transform 180ms ease-out;
+  }
+  .lineup-card:hover{ z-index:20; }
+
+  /* Cards slide across in one continuous pass: off-screen left -> through
+     their fan position -> off-screen right, where they disappear. A
+     single two-point transition (no intermediate keyframe stops needed
+     now that there's no vertical arc), eased fast-in then slowing down,
+     staggered so the cards follow one another. */
+  #lineup.pre-reveal .lineup-card{
+    transform:translateX(-130vw) rotate(var(--rot)) translateY(var(--ty));
+  }
+  #lineup.run .lineup-card{
+    transform:translateX(130vw) rotate(var(--rot)) translateY(var(--ty));
+    transition:transform 4000ms cubic-bezier(0.33,1,0.68,1);
+    transition-delay:calc((var(--count) - 1 - var(--i)) * 70ms);
+  }
+  /* Once the fan has fully slid off-screen, JS hides the row entirely
+     (the cards are already invisible, this just drops them from layout)
+     and reveals the grid below. */
+  .lineup-row.done{ display:none; }
+
+  /* Grid: hidden until JS adds "show" once the exit has settled. Cards
+     fade in while sliding up from just below their resting position,
+     staggered left-to-right, top-to-bottom by --gi. No max-width/centering
+     on the container itself — it spans the full .wrap width so full rows
+     line up with the "Meet 1DOLO" headline above it. Flexbox (not grid)
+     is used here specifically so the incomplete last row (53 cards ÷ 5
+     columns leaves 3) centers itself automatically instead of hugging
+     the left edge the way a grid's fixed tracks would. */
+  .lineup-grid{
+    display:none;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+  }
+  .lineup-grid.ready{ display:flex; }
+  .grid-card{
+    flex:0 0 calc((100% - 4 * 10px) / 5);
+    aspect-ratio:220/308;
+    opacity:0;
+    transform:translateY(50px);
+    transition:opacity 500ms ease-out, transform 500ms ease-out;
+    transition-delay:calc(var(--gi) * 50ms);
+  }
+  .lineup-grid.ready.show .grid-card{
+    opacity:1;
+    transform:translateY(0);
+  }
+  @media (max-width:640px){
+    .lineup-grid{ gap:18px; }
+    .grid-card{ flex-basis:calc((100% - 1 * 18px) / 2); }
+  }
 
   /* ---------- credits ---------- */
   #credits{ background:var(--night); color:var(--cream); }
@@ -636,61 +725,128 @@
   </div>
 </section>
 
-<section class="block" id="facebook">
+<section class="block" id="social">
   <div class="wrap">
-    <div class="kicker">Latest update</div>
-    <h2 class="headline">From Facebook</h2>
-    <a class="fb-card" id="fbCard" href="https://www.facebook.com/profile.php?id=61565202106574" target="_blank" rel="noopener">
-      <div class="fb-card-head">
-        <span class="fb-card-avatar" id="fbCardAvatar">1D</span>
-        <div>
-          <div class="fb-card-name">1DOLO</div>
-          <div class="fb-card-handle">@the1dolo</div>
+    <div class="kicker">Latest updates</div>
+    <h2 class="headline">Stay Updated</h2>
+    <div class="social-cards">
+      <a class="fb-card" id="fbCard" href="https://www.facebook.com/profile.php?id=61565202106574" target="_blank" rel="noopener">
+        <div class="fb-card-head">
+          <span class="fb-card-avatar" id="fbCardAvatar">1D</span>
+          <div>
+            <div class="fb-card-name">1DOLO</div>
+            <div class="fb-card-handle">@the1dolo</div>
+          </div>
+          <span class="fb-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94z"/></svg>
+          </span>
         </div>
-        <span class="fb-card-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94z"/></svg>
-        </span>
-      </div>
-      <div class="fb-card-post">
-        <div class="fb-card-image" id="fbCardImage" aria-hidden="true"><span>idolo</span></div>
-        <p class="fb-card-caption" id="fbCardCaption">Evolving with purpose.<br>#1DOLO</p>
-      </div>
-      <span class="fb-card-cta">Follow on Facebook →</span>
-    </a>
+        <div class="fb-card-post">
+          <div class="fb-card-image" id="fbCardImage" aria-hidden="true"><span>idolo</span></div>
+          <p class="fb-card-caption" id="fbCardCaption">Evolving with purpose.<br>#1DOLO</p>
+        </div>
+        <span class="fb-card-cta">Follow on Facebook →</span>
+      </a>
+
+      <a class="ig-card" id="igCard" href="https://www.instagram.com/the1dolo" target="_blank" rel="noopener">
+        <div class="ig-card-head">
+          <span class="ig-card-avatar" id="igCardAvatar">1D</span>
+          <div>
+            <div class="ig-card-name">1DOLO</div>
+            <div class="ig-card-handle">@the1dolo</div>
+          </div>
+          <span class="ig-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="igGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#fdf497"/>
+                  <stop offset="20%" stop-color="#fd5949"/>
+                  <stop offset="60%" stop-color="#d6249f"/>
+                  <stop offset="100%" stop-color="#285AEB"/>
+                </linearGradient>
+              </defs>
+              <path fill="url(#igGradient)" d="M12 2c-2.72 0-3.06.01-4.12.06-1.06.05-1.79.22-2.43.47a4.92 4.92 0 0 0-1.78 1.16A4.92 4.92 0 0 0 2.53 5.47c-.25.64-.42 1.37-.47 2.43C2.01 8.96 2 9.3 2 12s.01 3.06.06 4.12c.05 1.06.22 1.79.47 2.43a4.92 4.92 0 0 0 1.16 1.78 4.92 4.92 0 0 0 1.78 1.16c.64.25 1.37.42 2.43.47C8.94 21.99 9.28 22 12 22s3.06-.01 4.12-.06c1.06-.05 1.79-.22 2.43-.47a4.92 4.92 0 0 0 1.78-1.16 4.92 4.92 0 0 0 1.16-1.78c.25-.64.42-1.37.47-2.43.05-1.06.06-1.4.06-4.12s-.01-3.06-.06-4.12c-.05-1.06-.22-1.79-.47-2.43a4.92 4.92 0 0 0-1.16-1.78 4.92 4.92 0 0 0-1.78-1.16c-.64-.25-1.37-.42-2.43-.47C15.06 2.01 14.72 2 12 2zm0 1.8c2.67 0 2.99.01 4.04.06.98.04 1.5.21 1.85.34.47.18.8.4 1.15.75.35.35.57.68.75 1.15.13.35.3.87.34 1.85.05 1.05.06 1.37.06 4.04s-.01 2.99-.06 4.04c-.04.98-.21 1.5-.34 1.85-.18.47-.4.8-.75 1.15-.35.35-.68.57-1.15.75-.35.13-.87.3-1.85.34-1.05.05-1.37.06-4.04.06s-2.99-.01-4.04-.06c-.98-.04-1.5-.21-1.85-.34a3.1 3.1 0 0 1-1.15-.75 3.1 3.1 0 0 1-.75-1.15c-.13-.35-.3-.87-.34-1.85-.05-1.05-.06-1.37-.06-4.04s.01-2.99.06-4.04c.04-.98.21-1.5.34-1.85.18-.47.4-.8.75-1.15.35-.35.68-.57 1.15-.75.35-.13.87-.3 1.85-.34C9.01 3.81 9.33 3.8 12 3.8zm0 3.06a5.14 5.14 0 1 0 0 10.28 5.14 5.14 0 0 0 0-10.28zm0 8.48a3.34 3.34 0 1 1 0-6.68 3.34 3.34 0 0 1 0 6.68zm6.54-8.68a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"/>
+            </svg>
+          </span>
+        </div>
+        <div class="ig-card-post">
+          <div class="ig-card-image" id="igCardImage" aria-hidden="true"><span>idolo</span></div>
+          <p class="ig-card-caption" id="igCardCaption">Evolving with purpose.<br>#1DOLO</p>
+        </div>
+        <span class="ig-card-cta">Follow on Instagram →</span>
+      </a>
+    </div>
   </div>
 </section>
 
-<section class="block" id="instagram">
+<section class="block" id="lineup">
   <div class="wrap">
-    <div class="kicker">Latest update</div>
-    <h2 class="headline">From Instagram</h2>
-    <a class="ig-card" id="igCard" href="https://www.instagram.com/the1dolo" target="_blank" rel="noopener">
-      <div class="ig-card-head">
-        <span class="ig-card-avatar" id="igCardAvatar">1D</span>
-        <div>
-          <div class="ig-card-name">1DOLO</div>
-          <div class="ig-card-handle">@the1dolo</div>
-        </div>
-        <span class="ig-card-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="igGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#fdf497"/>
-                <stop offset="20%" stop-color="#fd5949"/>
-                <stop offset="60%" stop-color="#d6249f"/>
-                <stop offset="100%" stop-color="#285AEB"/>
-              </linearGradient>
-            </defs>
-            <path fill="url(#igGradient)" d="M12 2c-2.72 0-3.06.01-4.12.06-1.06.05-1.79.22-2.43.47a4.92 4.92 0 0 0-1.78 1.16A4.92 4.92 0 0 0 2.53 5.47c-.25.64-.42 1.37-.47 2.43C2.01 8.96 2 9.3 2 12s.01 3.06.06 4.12c.05 1.06.22 1.79.47 2.43a4.92 4.92 0 0 0 1.16 1.78 4.92 4.92 0 0 0 1.78 1.16c.64.25 1.37.42 2.43.47C8.94 21.99 9.28 22 12 22s3.06-.01 4.12-.06c1.06-.05 1.79-.22 2.43-.47a4.92 4.92 0 0 0 1.78-1.16 4.92 4.92 0 0 0 1.16-1.78c.25-.64.42-1.37.47-2.43.05-1.06.06-1.4.06-4.12s-.01-3.06-.06-4.12c-.05-1.06-.22-1.79-.47-2.43a4.92 4.92 0 0 0-1.16-1.78 4.92 4.92 0 0 0-1.78-1.16c-.64-.25-1.37-.42-2.43-.47C15.06 2.01 14.72 2 12 2zm0 1.8c2.67 0 2.99.01 4.04.06.98.04 1.5.21 1.85.34.47.18.8.4 1.15.75.35.35.57.68.75 1.15.13.35.3.87.34 1.85.05 1.05.06 1.37.06 4.04s-.01 2.99-.06 4.04c-.04.98-.21 1.5-.34 1.85-.18.47-.4.8-.75 1.15-.35.35-.68.57-1.15.75-.35.13-.87.3-1.85.34-1.05.05-1.37.06-4.04.06s-2.99-.01-4.04-.06c-.98-.04-1.5-.21-1.85-.34a3.1 3.1 0 0 1-1.15-.75 3.1 3.1 0 0 1-.75-1.15c-.13-.35-.3-.87-.34-1.85-.05-1.05-.06-1.37-.06-4.04s.01-2.99.06-4.04c.04-.98.21-1.5.34-1.85.18-.47.4-.8.75-1.15.35-.35.68-.57 1.15-.75.35-.13.87-.3 1.85-.34C9.01 3.81 9.33 3.8 12 3.8zm0 3.06a5.14 5.14 0 1 0 0 10.28 5.14 5.14 0 0 0 0-10.28zm0 8.48a3.34 3.34 0 1 1 0-6.68 3.34 3.34 0 0 1 0 6.68zm6.54-8.68a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"/>
-          </svg>
-        </span>
-      </div>
-      <div class="ig-card-post">
-        <div class="ig-card-image" id="igCardImage" aria-hidden="true"><span>idolo</span></div>
-        <p class="ig-card-caption" id="igCardCaption">Evolving with purpose.<br>#1DOLO</p>
-      </div>
-      <span class="ig-card-cta">Follow on Instagram →</span>
-    </a>
+    <h2 class="headline">Meet 1DOLO</h2>
+    <div class="lineup-row">
+      <div class="lineup-card" style="--i:0;"><div class="lineup-card-face"></div></div>
+      <div class="lineup-card" style="--i:1;"><div class="lineup-card-face"></div></div>
+      <div class="lineup-card" style="--i:2;"><div class="lineup-card-face"></div></div>
+      <div class="lineup-card" style="--i:3;"><div class="lineup-card-face"></div></div>
+      <div class="lineup-card" style="--i:4;"><div class="lineup-card-face"></div></div>
+      <div class="lineup-card" style="--i:5;"><div class="lineup-card-face"></div></div>
+      <div class="lineup-card" style="--i:6;"><div class="lineup-card-face"></div></div>
+      <div class="lineup-card" style="--i:7;"><div class="lineup-card-face"></div></div>
+    </div>
+    <div class="lineup-grid" id="lineupGrid">
+      <div class="grid-card" style="--gi:0;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:1;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:2;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:3;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:4;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:5;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:6;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:7;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:8;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:9;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:10;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:11;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:12;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:13;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:14;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:15;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:16;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:17;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:18;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:19;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:20;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:21;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:22;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:23;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:24;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:25;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:26;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:27;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:28;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:29;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:30;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:31;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:32;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:33;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:34;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:35;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:36;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:37;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:38;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:39;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:40;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:41;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:42;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:43;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:44;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:45;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:46;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:47;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:48;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:49;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:50;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:51;"><div class="lineup-card-face"></div></div>
+      <div class="grid-card" style="--gi:52;"><div class="lineup-card-face"></div></div>
+    </div>
   </div>
 </section>
 
@@ -1035,6 +1191,41 @@
     return text.slice(0, max).replace(/\s+\S*$/, '') + '…';
   }
 
+  // Instagram/Facebook's CDN blocks image requests from datacenter IPs and
+  // wrong referrers (hotlink protection) — this can affect both direct
+  // browser loads AND a Worker's own outbound fetch, since Meta's CDN
+  // sometimes blocks known cloud/hosting IP ranges outright. So each image
+  // gets two independent proxy attempts: our own Worker first, then
+  // images.weserv.nl (a public image-fetching proxy commonly used to get
+  // around exactly this kind of hotlink block) as a backup. We only reveal
+  // the photo (and hide the placeholder text) once one candidate is
+  // confirmed to actually load — buildCandidates lists every URL to try,
+  // in priority order, and tryUrls walks it, leaving the default gradient
+  // + initials in place if every candidate fails.
+  function buildCandidates(rawUrls){
+    var out = [];
+    rawUrls.forEach(function(u){
+      if(!u) return;
+      out.push(WORKER_URL + 'image?url=' + encodeURIComponent(u));
+      out.push('https://images.weserv.nl/?url=' + encodeURIComponent(u));
+    });
+    return out;
+  }
+
+  function tryUrls(el, candidates, i){
+    i = i || 0;
+    if(i >= candidates.length) return;
+    var test = new Image();
+    test.onload = function(){
+      el.style.backgroundImage = 'url(' + candidates[i] + ')';
+      el.classList.add('has-photo');
+    };
+    test.onerror = function(){
+      tryUrls(el, candidates, i + 1);
+    };
+    test.src = candidates[i];
+  }
+
   function tryFetch(i){
     if(i >= URLS_TO_TRY.length) return; // all failed — keep static placeholder
     fetch(URLS_TO_TRY[i])
@@ -1048,25 +1239,16 @@
 
         if(post.url) card.href = post.url;
 
-        // data.favicon is the Instagram account's own profile photo — use it
-        // as the banner's base image so the card never looks empty, then
-        // let the actual post image (if the feed has one) take over.
-        if(data.favicon){
-          imageEl.style.backgroundImage = 'url(' + data.favicon + ')';
-          imageEl.classList.add('has-photo');
-        }
-        if(post.image){
-          imageEl.style.backgroundImage = 'url(' + post.image + ')';
-          imageEl.classList.add('has-photo');
-        }
+        // Prefer the actual post image for the banner; fall back to the
+        // account's profile photo (data.favicon) if the feed has no image.
+        tryUrls(imageEl, buildCandidates([post.image, data.favicon]));
 
         if(post.content_text){
           captionEl.textContent = truncate(cleanText(post.content_text), 160);
         }
 
-        if(avatarEl && data.favicon){
-          avatarEl.style.backgroundImage = 'url(' + data.favicon + ')';
-          avatarEl.classList.add('has-photo');
+        if(avatarEl){
+          tryUrls(avatarEl, buildCandidates([data.favicon]));
         }
       })
       .catch(function(){
@@ -1075,6 +1257,63 @@
   }
 
   tryFetch(0);
+})();
+
+(function(){
+  var lineup = document.getElementById('lineup');
+  if(!lineup) return;
+  var lineupRow = lineup.querySelector('.lineup-row');
+  var grid = document.getElementById('lineupGrid');
+
+  function showGrid(){
+    if(lineupRow) lineupRow.classList.add('done');
+    if(!grid) return;
+    // Can't transition an element straight out of display:none, so first
+    // switch it to display:grid (still faded out) and let the browser
+    // paint that frame, then trigger the fade/slide-up on the next frame.
+    grid.classList.add('ready');
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        grid.classList.add('show');
+      });
+    });
+  }
+
+  function reveal(){
+    lineup.classList.remove('pre-reveal');
+    lineup.classList.add('run');
+    // Must roughly match the CSS: 8 cards, 70ms stagger, 4000ms slide each.
+    // Waiting for the very last card's transitionend made the grid feel
+    // slow to appear, so instead fire once the last card is ~65% through
+    // its own slide — by then it's already well past the right edge of
+    // the screen (the ease-out curve has covered ~95%+ of the distance),
+    // so the cut is invisible even though it's not technically "finished".
+    var LAST_CARD_DELAY_MS = 7 * 70;
+    var SETTLE_FRACTION = 0.65;
+    var GRID_TRIGGER_MS = LAST_CARD_DELAY_MS + SETTLE_FRACTION * 4000;
+    setTimeout(showGrid, GRID_TRIGGER_MS);
+  }
+
+  // Add the "hidden" state only once we know JS is actually running, so a
+  // no-JS visitor (or a failed script load) never gets stuck with an
+  // invisible, off-screen fan of cards.
+  lineup.classList.add('pre-reveal');
+
+  if(!('IntersectionObserver' in window)){
+    reveal();
+    return;
+  }
+
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        reveal();
+        observer.unobserve(entry.target); // play once
+      }
+    });
+  }, { threshold: 0.25 });
+
+  observer.observe(lineup);
 })();
 </script>
 
